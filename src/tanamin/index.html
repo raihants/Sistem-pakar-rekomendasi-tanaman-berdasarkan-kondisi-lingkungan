@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistem Pakar Rekomendasi Tanaman</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-green-50 min-h-screen flex items-center justify-center">
+
+  <div class="w-full max-w-md bg-white p-6 rounded-2xl shadow-xl border border-green-200 flex flex-col">
+    <h1 class="text-2xl font-bold text-center mb-4 text-green-700">
+      Konsultasi Rekomendasi Tanaman
+    </h1>
+
+    <div id="chatBox" class="flex-1 overflow-y-auto mb-4 p-3 bg-gray-50 rounded-lg border border-gray-200 space-y-3"></div>
+
+    <form id="pakarForm" class="space-y-3">
+      <!-- Dropdown Tanah -->
+      <label class="block font-semibold mb-1 text-gray-700">Jenis Tanah:</label>
+      <select id="tanah" class="w-full border rounded-lg p-2 focus:ring-2 focus:ring-green-500 focus:outline-none">
+        <option value="">-- Pilih jenis tanah --</option>
+        <option value="tanah_gembur">Tanah Gembur</option>
+        <option value="tanah_berpasir">Tanah Berpasir</option>
+        <option value="tanah_liat">Tanah Liat</option>
+        <option value="tanah_subur">Tanah Subur</option>
+      </select>
+
+      <!-- Dropdown Curah Hujan -->
+      <label class="block font-semibold mb-1 text-gray-700">Curah Hujan:</label>
+      <select id="curah_hujan" class="w-full border rounded-lg p-2 focus:ring-2 focus:ring-green-500 focus:outline-none">
+        <option value="">-- Pilih curah hujan --</option>
+        <option value="curah_hujan_tinggi">Curah Hujan Tinggi</option>
+        <option value="curah_hujan_sedang">Curah Hujan Sedang</option>
+        <option value="curah_hujan_rendah">Curah Hujan Rendah</option>
+      </select>
+
+      <!-- Dropdown Iklim -->
+      <label class="block font-semibold mb-1 text-gray-700">Iklim:</label>
+      <select id="iklim" class="w-full border rounded-lg p-2 focus:ring-2 focus:ring-green-500 focus:outline-none">
+        <option value="">-- Pilih iklim --</option>
+        <option value="iklim_dingin">Iklim Dingin</option>
+        <option value="iklim_panas">Iklim Panas</option>
+      </select>
+
+      <button type="submit"
+        class="w-full bg-green-600 text-white py-2.5 rounded-lg font-semibold hover:bg-green-700 transition">
+        💬 Mulai Konsultasi
+      </button>
+    </form>
+  </div>
+
+  <script>
+    const form = document.getElementById("pakarForm");
+    const chatBox = document.getElementById("chatBox");
+
+    const addMessage = (text, sender = "bot") => {
+      const msg = document.createElement("div");
+      msg.className = sender === "bot"
+        ? "bg-green-100 text-green-800 px-3 py-2 rounded-xl max-w-[80%] self-start"
+        : "bg-blue-100 text-blue-800 px-3 py-2 rounded-xl max-w-[80%] self-end";
+      msg.innerText = text;
+      chatBox.appendChild(msg);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    };
+
+    const sleep = (ms) => new Promise(resolve => setTimeout(resolve, ms));
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      chatBox.innerHTML = "";
+
+      // Ambil nilai dari dropdown
+      const tanah = document.getElementById("tanah").value;
+      const curahHujan = document.getElementById("curah_hujan").value;
+      const iklim = document.getElementById("iklim").value;
+
+      // Pastikan semua terisi
+      if (!tanah || !curahHujan || !iklim) {
+        return addMessage("⚠️ Silakan lengkapi semua pilihan (tanah, curah hujan, dan iklim).", "bot");
+      }
+
+      const selected = [tanah, curahHujan, iklim];
+      addMessage("Kamu memilih: " + selected.join(", "), "user");
+      addMessage("⏳ Menganalisis kondisi lahan kamu...", "bot");
+
+      try {
+        const response = await fetch("http://localhost:8000/infer", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ facts: selected })
+        });
+        const data = await response.json();
+
+        await sleep(1000);
+        addMessage("✅ Analisis selesai! Berikut hasil penalarannya:", "bot");
+
+        for (const step of data.penjelasan) {
+          await sleep(700);
+          addMessage(step.replace("Rule terpenuhi:", "📘 Rule:"), "bot");
+        }
+
+        await sleep(1000);
+        const rekomendasiList = data.fakta_akhir
+          .filter(f => f.startsWith("rekomendasi:"))
+          .map(f => f.replace("rekomendasi:", "").replaceAll("_", " ").trim());
+
+        if (rekomendasiList.length > 0) {
+          addMessage("🌾 Rekomendasi: " + rekomendasiList.join(", "), "bot");
+        } else {
+          addMessage("🤔 Kondisi ini jarang ditemukan. Coba ubah jenis tanah atau curah hujan untuk hasil lain.", "bot");
+        }
+      } catch (err) {
+        addMessage("❌ Terjadi kesalahan: " + err.message, "bot");
+      }
+    });
+  </script>
+
+</body>
+</html>

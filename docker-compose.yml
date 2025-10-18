@@ -1,0 +1,58 @@
+services:
+  web:
+    build: .
+    container_name: php_apache
+    ports:
+      - "8080:80"
+    volumes:
+      - ./src:/var/www/html/
+      - ./apache.conf:/etc/apache2/conf-enabled/custom.conf
+    depends_on:
+      - db
+      - python_api
+
+  db:
+    image: mysql:5.7
+    container_name: mysql_db
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: db_mahasiswa
+      MYSQL_USER: user
+      MYSQL_PASSWORD: password
+    volumes:
+      - db_data:/var/lib/mysql
+    ports:
+      - "3306:3306"
+
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin
+    container_name: phpmyadmin
+    restart: always
+    environment:
+      PMA_HOST: db
+      PMA_PORT: 3306
+    ports:
+      - "8081:80"
+    depends_on:
+      - db
+    networks:
+      - app_net
+
+  python_api:
+      build: ./python
+      container_name: python_api
+      ports:
+        - "8000:8000"
+      volumes:
+        - ./python:/app
+      working_dir: /app
+      command: uvicorn main:app --host=0.0.0.0 --port=8000 --reload
+      networks:
+        - app_net
+
+volumes:
+  db_data:
+  
+networks:
+  app_net:
