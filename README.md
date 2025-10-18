@@ -1,8 +1,3 @@
-Berikut versi lengkap README yang bisa kamu langsung **copy-paste** ke GitHub repo kamu.
-Formatnya sudah siap pakai dan terstruktur sesuai format dokumentasi sistem pakar akademik 👇
-
----
-
 # 🌾 Sistem Pakar Rekomendasi Tanaman Berdasarkan Kondisi Lingkungan
 
 ## 📖 Deskripsi Proyek
