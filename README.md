@@ -38,14 +38,9 @@ Tujuan utama dari sistem ini adalah untuk membantu pengguna — terutama petani 
 Contoh penerapan aturan dalam sistem pakar:
 
 ```
-IF tanah = "gembur" AND curah_hujan = "tinggi"
-THEN rekomendasi_tanaman = "Padi"
-
-IF tanah = "berpasir" AND curah_hujan = "rendah"
-THEN rekomendasi_tanaman = "Jagung"
-
-IF tanah = "lempung" AND curah_hujan = "sedang"
-THEN rekomendasi_tanaman = "Kedelai"
+    {"if": {"tanah_gembur", "curah_hujan_rendah"}, "then": "cocok_jagung"},
+    {"if": {"tanah_liat", "curah_hujan_sedang"}, "then": "cocok_singkong"},
+    {"if": {"tanah_berpasir", "curah_hujan_rendah"}, "then": "cocok_kacang_tanah"},
 ```
 
 Aturan di atas disusun berdasarkan prinsip agronomi umum dan literatur ilmiah mengenai kesesuaian lahan dan tanaman.
@@ -73,7 +68,6 @@ Referensi utama:
    * Jenis dan tekstur tanah
    * Curah hujan
    * Suhu dan iklim
-   * Kelembapan tanah
 
 ---
 
