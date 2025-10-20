@@ -85,7 +85,7 @@
       addMessage("⏳ Menganalisis kondisi lahan kamu...", "bot");
 
       try {
-        const response = await fetch("http://localhost:8000/infer", {
+        const response = await fetch("http://172.16.16.11:8000/tanaman/infer", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ facts: selected })

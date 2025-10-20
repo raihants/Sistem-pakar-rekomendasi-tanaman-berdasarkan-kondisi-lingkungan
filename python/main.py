@@ -1,11 +1,10 @@
 from fastapi import FastAPI
-from pydantic import BaseModel
 from fastapi.middleware.cors import CORSMiddleware
-from forward_chaining_tanaman import forward_chaining, rules
+from tanaman.router import router as tanaman_router
 
 app = FastAPI(
-    title="Sistem Pakar Tanaman API",
-    description="API untuk memberikan rekomendasi tanaman berdasarkan kondisi lahan menggunakan forward chaining",
+    title="Sistem Pakar API",
+    description="API utama untuk berbagai sistem pakar",
     version="1.0.0"
 )
 
@@ -17,18 +16,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-class FactsInput(BaseModel):
-    facts: list[str]
-
-@app.post("/infer")
-def infer_tanaman(input_data: FactsInput):
-    inferred, explanations = forward_chaining(set(input_data.facts), rules)
-    return {
-        "facts_awal": input_data.facts,
-        "fakta_akhir": list(inferred),
-        "penjelasan": explanations
-    }
+# Daftarkan router tanaman
+app.include_router(tanaman_router)
 
 @app.get("/")
-def home():
-    return {"message": "Sistem Pakar Tanaman API aktif. Gunakan endpoint /infer"}
+def root():
+    return {"message": "Sistem Pakar API aktif. Coba akses /tanaman atau API lain."}
